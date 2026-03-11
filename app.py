@@ -90,7 +90,7 @@ st.set_page_config(layout="wide", page_title="Analyse d'Entropie")
 
 st.title("Outil d'Analyse pour le Point de Coupure Optimal par l'Entropie")
 st.markdown("""
-Cette application web implémente la méthode décrite dans l'article *"[Votre Titre d'Article Ici]"*.
+Cette application web implémente la méthode décrite dans l'article *"[Marleau, J., & Garvie, P. (2026). Use of an entropy measure to dichotomize a variable. Journal of Psychometric Research, 4(1), 17-25.]"*.
 Elle permet de déterminer le point de coupure optimal pour une variable ordinale en se basant sur la théorie de l'information.
 """)
 
