@@ -114,7 +114,7 @@ def analyze_data(data_counts):
 
 st.set_page_config(layout="wide", page_title="EquiCut v1.0b — Entropy Analysis")
 
-st.title("EquiCut v1.0b — Entropy-Based Optimal Cutoff Analysis Tool")
+st.title("EquiCut v1.0b — Equitability-Entropy-Based Optimal Cutoff Analysis Tool")
 st.markdown("""
 This application implements the method described in:
 *Marleau, J., & Garvie, P. (2026). Use of an entropy measure to dichotomize a variable.
