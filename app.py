@@ -4,15 +4,30 @@ import math
 from io import StringIO
 
 # ==============================================================================
-# 1. FONCTIONS DE CALCUL (Logique principale de votre programme)
-# Ces fonctions sont presque identiques à votre code original.
-# La seule modification majeure est que la fonction principale "analyze_data"
-# RETOURNE les résultats au lieu de les IMPRIMER.
+# EquiCut v1.0b
+# Entropy-Based Optimal Cutoff Analysis Tool
+#
+# Implements the method described in:
+# Marleau, J., & Garvie, P. (2026). Use of an entropy measure to dichotomize
+# a variable. Journal of Psychometric Research, 4(1), 17-25.
+# ==============================================================================
+
+# ==============================================================================
+# 1. CALCULATION FUNCTIONS (Core logic)
+# These functions implement the entropy-based analysis.
+# The main function "analyze_data" RETURNS results rather than PRINTING them,
+# so they can be displayed through the Streamlit interface.
 # ==============================================================================
 
 def calculate_shannon_entropy_and_equitability(counts):
     """
-    Calcule l'entropie de Shannon (H) et l'équitabilité (E) pour une liste de comptages.
+    Calculates the Shannon entropy (H) and equitability (E) for a list of counts.
+    
+    Parameters:
+        counts (list): A list of integer frequency counts per category.
+    
+    Returns:
+        tuple: (shannon_h, equitability_e)
     """
     total_count = sum(counts)
     if total_count == 0:
@@ -33,22 +48,32 @@ def calculate_shannon_entropy_and_equitability(counts):
 
     return shannon_h, equitability_e
 
+
 def analyze_data(data_counts):
     """
-    Analyse les données pour trouver le point de coupure optimal.
-    RETOURNE les résultats pour affichage dans l'interface Streamlit.
+    Analyzes the data to find the optimal cutoff point.
+    Iterates over all possible dichotomization points and identifies the one
+    whose equitability most closely matches the global equitability.
+
+    Parameters:
+        data_counts (list): A list of integer frequency counts, one per category,
+                            ordered from category 0 upward.
+
+    Returns:
+        dict: A dictionary containing global metrics, per-cutoff details,
+              and the optimal cutoff result. Returns None on invalid input.
     """
     if not data_counts or len(data_counts) < 2:
-        st.error("Erreur : Les données doivent contenir au moins deux catégories pour l'analyse.")
+        st.error("Error: Data must contain at least two categories for analysis.")
         return None
 
     num_original_categories = len(data_counts)
 
-    # Calcul de l'entropie et de l'équitabilité globales
+    # Calculate global entropy and equitability
     h_global, e_global = calculate_shannon_entropy_and_equitability(data_counts)
 
     results = []
-    # Itération à travers tous les points de coupure possibles
+    # Iterate through all possible cutoff points
     for cutoff_value in range(num_original_categories - 1):
         count_low = sum(data_counts[i] for i in range(cutoff_value + 1))
         count_high = sum(data_counts[i] for i in range(cutoff_value + 1, num_original_categories))
@@ -63,16 +88,16 @@ def analyze_data(data_counts):
         absolute_difference = abs(e_global - e_cutoff)
 
         results.append({
-            "Point de coupure": f"{cutoff_value}/{cutoff_value + 1}",
-            "H (Coupure)": h_cutoff,
-            "E (Coupure)": e_cutoff,
-            "Différence Absolue (E)": absolute_difference
+            "Cutoff Point": f"{cutoff_value}/{cutoff_value + 1}",
+            "H (Cutoff)": h_cutoff,
+            "E (Cutoff)": e_cutoff,
+            "Absolute Difference (E)": absolute_difference
         })
 
-    # Trouver le point de coupure optimal
-    optimal_result = min(results, key=lambda x: x["Différence Absolue (E)"])
+    # Find the optimal cutoff point (minimum absolute difference)
+    optimal_result = min(results, key=lambda x: x["Absolute Difference (E)"])
 
-    # Renvoyer un dictionnaire contenant tous les résultats
+    # Return a dictionary containing all results
     return {
         "num_categories": num_original_categories,
         "h_global": h_global,
@@ -81,100 +106,110 @@ def analyze_data(data_counts):
         "optimal_result": optimal_result
     }
 
+
 # ==============================================================================
-# 2. INTERFACE UTILISATEUR STREAMLIT
-# C'est la partie qui crée la page web interactive.
+# 2. STREAMLIT USER INTERFACE
+# Builds the interactive web page for EquiCut v1.0b.
 # ==============================================================================
 
-st.set_page_config(layout="wide", page_title="Analyse d'Entropie")
+st.set_page_config(layout="wide", page_title="EquiCut v1.0b — Entropy Analysis")
 
-st.title("Outil d'Analyse pour le Point de Coupure Optimal par l'Entropie")
+st.title("EquiCut v1.0b — Entropy-Based Optimal Cutoff Analysis Tool")
 st.markdown("""
-Cette application web implémente la méthode décrite dans l'article *"[Marleau, J., & Garvie, P. (2026). Use of an entropy measure to dichotomize a variable. Journal of Psychometric Research, 4(1), 17-25.]"*.
-Elle permet de déterminer le point de coupure optimal pour une variable ordinale en se basant sur la théorie de l'information.
+This application implements the method described in:
+*Marleau, J., & Garvie, P. (2026). Use of an entropy measure to dichotomize a variable.
+Journal of Psychometric Research, 4(1), 17–25.*
+
+It determines the optimal cutoff point for an ordinal variable using information theory.
 """)
 
+# --- Sidebar Instructions ---
 st.sidebar.header("Instructions")
 st.sidebar.info(
     """
-    1. **Préparez votre fichier de données** : Il doit être un fichier texte (`.txt`) contenant une seule colonne de nombres. Chaque ligne représente le nombre de cas (fréquence) pour une catégorie, en partant de la catégorie 0.
-    2. **Téléversez le fichier** en utilisant le bouton ci-dessous.
-    3. **Cliquez sur "Lancer l'Analyse"**.
-    4. **Consultez les résultats** qui s'afficheront sur la page.
-    5. **Téléchargez les résultats** si vous le souhaitez en utilisant le bouton qui apparaîtra en bas.
+    1. **Prepare your data file**: It must be a plain text file (`.txt`) containing
+       a single column of integers. Each line represents the number of cases (frequency)
+       for one category, starting from category 0.
+    2. **Upload the file** using the button below.
+    3. **Click "Run Analysis"**.
+    4. **Review the results** displayed on the page.
+    5. **Download the results** using the button that appears at the bottom of the page.
     """
 )
 
-# --- Étape A : Téléversement du fichier ---
-uploaded_file = st.file_uploader("1. Choisissez votre fichier de données (.txt)", type="txt")
+# --- Step A: File Upload ---
+uploaded_file = st.file_uploader("1. Choose your data file (.txt)", type="txt")
 
 if uploaded_file is not None:
     try:
-        # Lecture et validation des données
+        # Read and validate the data
         string_data = uploaded_file.getvalue().decode("utf-8")
         lines = string_data.strip().split('\n')
         counts = [int(line.strip()) for line in lines if line.strip()]
 
-        st.success(f"Fichier téléversé avec succès. {len(counts)} catégories détectées.")
-        
-        # Afficher un aperçu des données
-        with st.expander("Afficher les données brutes téléversées"):
+        st.success(f"File uploaded successfully. {len(counts)} categories detected.")
+
+        # Preview the raw uploaded data
+        with st.expander("Show raw uploaded data"):
             st.text(string_data)
 
-        # --- Étape B : Bouton pour lancer l'analyse ---
-        if st.button("2. Lancer l'Analyse", type="primary"):
-            
-            # --- Étape C : Appel de la fonction d'analyse et affichage des résultats ---
+        # --- Step B: Analysis Button ---
+        if st.button("2. Run Analysis", type="primary"):
+
+            # --- Step C: Run analysis and display results ---
             analysis_results = analyze_data(counts)
 
             if analysis_results:
-                st.header("Résultats de l'Analyse")
+                st.header("Analysis Results")
 
-                # Afficher les résultats globaux
-                st.subheader("Résultats Globaux")
+                # Global results
+                st.subheader("Global Results")
                 col1, col2, col3 = st.columns(3)
-                col1.metric("Nombre de catégories", f"{analysis_results['num_categories']}")
-                col2.metric("Entropie Globale (H)", f"{analysis_results['h_global']:.4f}")
-                col3.metric("Équitabilité Globale (E)", f"{analysis_results['e_global']:.4f}")
+                col1.metric("Number of Categories", f"{analysis_results['num_categories']}")
+                col2.metric("Global Entropy (H)", f"{analysis_results['h_global']:.4f}")
+                col3.metric("Global Equitability (E)", f"{analysis_results['e_global']:.4f}")
 
-                # Afficher le résultat optimal de manière visible
-                st.subheader("Point de Coupure Optimal")
+                # Optimal cutoff result
+                st.subheader("Optimal Cutoff Point")
                 optimal = analysis_results['optimal_result']
-                st.success(f"**Le point de coupure optimal est : {optimal['Point de coupure']}**")
-                
+                st.success(f"**The optimal cutoff point is: {optimal['Cutoff Point']}**")
+
                 col_opt1, col_opt2 = st.columns(2)
-                col_opt1.metric("Équitabilité pour ce point de coupure", f"{optimal['E (Coupure)']:.4f}")
-                col_opt2.metric("Différence absolue minimale avec l'équitabilité globale", f"{optimal['Différence Absolue (E)']:.4f}")
+                col_opt1.metric("Equitability at This Cutoff", f"{optimal['E (Cutoff)']:.4f}")
+                col_opt2.metric("Minimum Absolute Difference from Global Equitability", f"{optimal['Absolute Difference (E)']:.4f}")
 
-                # Afficher le tableau détaillé
-                st.subheader("Détails pour chaque point de coupure")
+                # Detailed results table
+                st.subheader("Details for Each Cutoff Point")
                 results_df = pd.DataFrame(analysis_results['detailed_results'])
-                st.dataframe(results_df.style.highlight_min(subset=['Différence Absolue (E)'], color='lightgreen'))
+                st.dataframe(results_df.style.highlight_min(subset=['Absolute Difference (E)'], color='lightgreen'))
 
-                # --- Étape D : Option de téléchargement ---
-                st.header("Télécharger les Résultats")
-                
-                # Préparer le contenu du fichier texte à télécharger
+                # --- Step D: Download Option ---
+                st.header("Download Results")
+
+                # Prepare the text file content for download
                 output_string = StringIO()
-                output_string.write("ANALYSE D'ENTROPIE POUR LE POINT DE COUPURE OPTIMAL\n")
-                output_string.write("="*50 + "\n\n")
-                output_string.write("RÉSULTATS GLOBAUX\n")
-                output_string.write(f"Nombre de catégories originales: {analysis_results['num_categories']}\n")
-                output_string.write(f"Entropie Globale (H): {analysis_results['h_global']:.4f}\n")
-                output_string.write(f"Équitabilité Globale (E): {analysis_results['e_global']:.4f}\n\n")
-                output_string.write("POINT DE COUPURE OPTIMAL\n")
-                output_string.write(f"Point de coupure: {optimal['Point de coupure']}\n")
-                output_string.write(f"Équitabilité pour ce point: {optimal['E (Coupure)']:.4f}\n")
-                output_string.write(f"Différence absolue minimale: {optimal['Différence Absolue (E)']:.4f}\n\n")
-                output_string.write("DÉTAILS COMPLETS\n")
+                output_string.write("EQUICUT v1.0b — ENTROPY-BASED OPTIMAL CUTOFF ANALYSIS\n")
+                output_string.write("=" * 55 + "\n\n")
+                output_string.write("GLOBAL RESULTS\n")
+                output_string.write(f"Number of original categories: {analysis_results['num_categories']}\n")
+                output_string.write(f"Global Entropy (H): {analysis_results['h_global']:.4f}\n")
+                output_string.write(f"Global Equitability (E): {analysis_results['e_global']:.4f}\n\n")
+                output_string.write("OPTIMAL CUTOFF POINT\n")
+                output_string.write(f"Cutoff point: {optimal['Cutoff Point']}\n")
+                output_string.write(f"Equitability at this cutoff: {optimal['E (Cutoff)']:.4f}\n")
+                output_string.write(f"Minimum absolute difference: {optimal['Absolute Difference (E)']:.4f}\n\n")
+                output_string.write("FULL DETAILS\n")
                 results_df.to_csv(output_string, index=False, sep='\t')
-                
+
                 st.download_button(
-                    label="📥 Télécharger le fichier de résultats (.txt)",
+                    label="📥 Download results file (.txt)",
                     data=output_string.getvalue().encode('utf-8'),
-                    file_name="resultats_analyse_entropie.txt",
+                    file_name="equicut_analysis_results.txt",
                     mime="text/plain"
                 )
 
     except Exception as e:
-        st.error(f"Erreur lors de la lecture ou du traitement du fichier. Veuillez vérifier le format de votre fichier. Détails de l'erreur : {e}")
+        st.error(
+            f"Error reading or processing the file. Please verify your file format. "
+            f"Error details: {e}"
+        )
