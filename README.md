@@ -18,5 +18,7 @@ provides a comprehensive report. (Availability): The web tool and its full Pytho
 source code are freely available.
 
 Philippe Garvie, Jacques Marleau
+
 Gatineau, Québec, Canada
+
 2026-03-12
