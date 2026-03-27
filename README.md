@@ -40,10 +40,3 @@ To facilitate research and implementation, the different components of this proj
 📍 Gatineau, Québec, Canada  
 📅 **Date:** 2026-03-27  
 ⚖️ **License:** [MIT License](https://github.com/marleaugarvie/EquiCut/blob/main/LICENSE)
-
----
-*Note: For long-term archival purposes, a stable version of this source code and the associated datasets are maintained on OSF at [https://osf.io/8qrz2](https://osf.io/8qrz2).*
-
-Date: 2026-03-27
-
-License: MIT License
