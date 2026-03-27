@@ -17,8 +17,10 @@ or software installation. Users simply upload a frequency data file, and the too
 provides a comprehensive report. (Availability): The web tool and its full Python
 source code are freely available.
 
+"For long-term archival purposes, a stable version of this source code and the associated datasets are also available on OSF at https://osf.io/8qrz2."
+
 Philippe Garvie, Jacques Marleau
 
 Gatineau, Québec, Canada
 
-2026-03-12
+2026-03-27
